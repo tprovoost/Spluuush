@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Spluuush</string>
+    <string name="btn_start">Start</string>
+    <string name="btn_help">Help</string>
+    <string name="btn_menu">Menu</string>
+    <string name="btn_quit">Quit</string>
+    <string name="highscore">High Score: </string>
+    <string name="share">Share</string>
+    <string name="mwahaha">Mwahahahaha!</string>
+    <string name="lose">Loser!</string>
+    <string name="win">You win!</string>
+    <string name="continu">Continue</string>
+    <string name="restart">Restart</string>
+    <string name="menu">Menu</string>
+    <string name="monsters_attack">Monsters are attacking!</string>
+    <string name="monsters_attack2">Find and Kill them!</string>
+    <string name="sharebody">I did the amazing score of </string>
+    <string name="sharebody2">in Spluuush! Can you do better?</string>
+    <string name="sharehead">Spluuush High Score</string>
+</resources>
