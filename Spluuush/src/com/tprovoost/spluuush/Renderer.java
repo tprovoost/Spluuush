@@ -1,14 +1,18 @@
 package com.tprovoost.spluuush;
 
+import java.util.ArrayList;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Paint.Style;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -42,7 +46,8 @@ public class Renderer extends SurfaceView implements SurfaceHolder.Callback {
 	private Bitmap				bTouch				= BitmapFactory.decodeResource(getResources(), R.drawable.touch);
 	private Bitmap				bSquid				= BitmapFactory.decodeResource(getResources(), R.drawable.squid);
 	private Bitmap				bSquidKilled		= BitmapFactory.decodeResource(getResources(), R.drawable.squid_killed);
-	private Bitmap				bSquidResult		= BitmapFactory.decodeResource(getResources(), R.drawable.squid_killed);
+	private Bitmap				bSquidResultV		= BitmapFactory.decodeResource(getResources(), R.drawable.squid);
+	private Bitmap				bSquidResultH		= BitmapFactory.decodeResource(getResources(), R.drawable.squid);
 
 	// TEXT RESOURCES
 	private String				txtMonsters;
@@ -55,6 +60,9 @@ public class Renderer extends SurfaceView implements SurfaceHolder.Callback {
 	private String				txtMwahaha;
 	private String				txtLose;
 	private String				txtShare;
+	private Matrix				matrix;
+	private RectF				rectOrigin;
+	private RectF				rectDest			= new RectF();
 
 	// ---------
 	// CONSTANTS
@@ -181,6 +189,11 @@ public class Renderer extends SurfaceView implements SurfaceHolder.Callback {
 				drawResults(canvas);
 				drawGame(canvas);
 				drawGameOver(canvas);
+			} else if (status == GameStatus.GAME_IDLE) {
+				drawBackground(canvas);
+				drawLeftInterface(canvas);
+				drawRightInterface(canvas);
+				drawGame(canvas);
 			}
 
 			// draw the mute/unmute button
@@ -419,11 +432,15 @@ public class Renderer extends SurfaceView implements SurfaceHolder.Callback {
 
 	private void drawRightInterface(Canvas canvas) {
 		int idealSize = (int) (width * RIGHT_PART_SIZE / 3 - 1);
-		if (bSquid.getWidth() != idealSize) {
+		if (idealSize != 0 && bSquid.getWidth() != idealSize) {
 			bSquid = Bitmap.createScaledBitmap(bSquid, idealSize, idealSize, true);
 			bSquidKilled = Bitmap.createScaledBitmap(bSquidKilled, idealSize, idealSize, true);
 		}
-
+		int idealSize2 = engine.getSize() / Engine.SIZE_MAP;
+		if (idealSize2 != 0 && bSquidResultH.getWidth() != idealSize2) {
+			bSquidResultH = Bitmap.createScaledBitmap(bSquid, idealSize2, idealSize2, true);
+			bSquidResultV = Bitmap.createScaledBitmap(bSquid, idealSize2, idealSize2, true);
+		}
 		float x = width * (1 - RIGHT_PART_SIZE);
 		float y = height * (1 - RIGHT_PART_ENNEMIES) / 2;
 
@@ -474,29 +491,34 @@ public class Renderer extends SurfaceView implements SurfaceHolder.Callback {
 
 	private void drawResults(Canvas canvas) {
 		float incr = (float) engine.getSize() / Engine.SIZE_MAP;
-		float x0 = engine.getX() + incr / 2;
-		float y0 = engine.getY() + incr / 2;
-		int idealSize = (int) incr;
-		if (bSquidResult.getWidth() != idealSize) {
-			bSquidResult = Bitmap.createScaledBitmap(bSquid, idealSize, idealSize, true);
-		}
-		for (Boat b : engine.getBoats()) {
+		float x0 = engine.getX();
+		float y0 = engine.getY();
+		ArrayList<Boat> boats = engine.getBoats();
+		if (boats == null)
+			return;
+		for (Boat b : boats) {
+			if (engine.getStatus() != Engine.GameStatus.GAME_SHOW_RESULTS && engine.getStatus() != Engine.GameStatus.GAME_OVER)
+				return;
 			int[][] coords = b.getCoords();
-			int size = coords.length;
-			canvas.save();
-			canvas.scale(1, size);
-			if (!b.isVertical()) {
-				canvas.rotate(90);
+			if (matrix == null) {
+				matrix = new Matrix();
+				rectOrigin = new RectF(0, 0, incr, incr);
 			}
-			float left = x0 + coords[0][0] * incr;
-			float top = y0 + coords[0][1] * incr;
-			float right = x0 + coords[0][0] * incr + incr;
-			float bottom = x0 + coords[0][0] * incr+ incr;
-			canvas.drawRect(left, top, right, bottom, paint);
-			canvas.restore();
-			// canvas.drawLine(, , x0 + coords[coords.length - 1][0] * incr, y0
-			// + coords[coords.length - 1][1]
-			// * incr, paintStrokeRed);
+			rectDest.set(x0 + coords[0][0] * incr, y0 + coords[0][1] * incr, x0 + coords[coords.length - 1][0] * incr + incr, y0 + coords[coords.length - 1][1]
+					* incr + incr);
+			if (!b.isVertical()) {
+				matrix.reset();
+				matrix.setRectToRect(rectOrigin, rectDest, Matrix.ScaleToFit.FILL);
+				matrix.preRotate(-90, bSquidResultH.getWidth() / 2, bSquidResultH.getWidth() / 2);
+				canvas.drawBitmap(bSquidResultH, matrix, null);
+			} else {
+				matrix.reset();
+				matrix.setRectToRect(rectOrigin, rectDest, Matrix.ScaleToFit.FILL);
+				canvas.drawBitmap(bSquidResultV, matrix, null);
+			}
+			// canvas.drawRect(x0 + coords[0][0] * incr, y0 + coords[0][1] *
+			// incr, x0 + coords[coords.length - 1][0] * incr + incr, y0
+			// + coords[coords.length - 1][1] * incr + incr, paintStrokeRed);
 		}
 	}
 

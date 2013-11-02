@@ -276,7 +276,7 @@ public class Engine {
 	}
 
 	private void generateBoats() {
-		for (int i = 2; i <= 4; ++i) {
+		for (int i = 4; i >= 2; --i) {
 			Boat b = new Boat(i);
 			while (!b.positionBoat())
 				;
@@ -545,15 +545,16 @@ public class Engine {
 		// Log.d("engine", "giftiz button null");
 		// } else
 		// giftizButton.setVisibility(View.INVISIBLE);
-		boats.clear();
+		status = GameStatus.GAME_IDLE;
 		Arrays.fill(map, VOID);
-		generateBoats();
-		bombsLeft = NB_BOMBS;
-		status = GameStatus.GAME_RUNNING;
+		boats.clear();
 		nbGames++;
 		if (nbGames != 0 && (nbGames % ADS_EVERY == 0)) {
 			AdBuddiz.getInstance().showAd();
 		}
+		generateBoats();
+		bombsLeft = NB_BOMBS;
+		status = GameStatus.GAME_RUNNING;
 	}
 
 	public synchronized boolean isSpeaking() {
@@ -643,7 +644,7 @@ public class Engine {
 		public int[][] getCoords() {
 			return coords;
 		}
-		
+
 		public boolean isVertical() {
 			return vertical;
 		}
